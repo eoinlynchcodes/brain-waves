@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binaural Beats Generator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+        
+        :root {
+            --te-black: #000000;
+            --te-white: #ffffff;
+            --te-gray: #222222;
+            --te-yellow: #fffa4d;
+            --te-orange: #ff6d24;
+            --te-blue: #0000ff;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: var(--te-black);
+            color: var(--te-white);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            letter-spacing: -0.02em;
+        }
+        
+        h1 {
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+            color: var(--te-yellow);
+        }
+        
+        .container {
+            background-color: var(--te-gray);
+            border: 2px solid var(--te-white);
+            padding: 24px;
+            border-radius: 2px;
+            box-shadow: 6px 6px 0px var(--te-yellow);
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+        }
+        
+        .control-group label {
+            text-transform: uppercase;
+            font-size: 11px;
+            font-weight: bold;
+            color: var(--te-yellow);
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .slider-container input {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            height: 2px;
+            background: var(--te-white);
+            outline: none;
+        }
+        
+        .slider-container input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--te-yellow);
+            cursor: pointer;
+            border: none;
+            border-radius: 0;
+        }
+        
+        .slider-container input::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: var(--te-yellow);
+            cursor: pointer;
+            border: none;
+            border-radius: 0;
+        }
+        
+        .slider-value {
+            min-width: 70px;
+            text-align: right;
+            font-size: 12px;
+            background-color: var(--te-black);
+            padding: 4px 8px;
+            color: var(--te-yellow);
+            border-left: 2px solid var(--te-yellow);
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            background-color: var(--te-black);
+            color: var(--te-white);
+            border: 2px solid var(--te-white);
+            padding: 10px 15px;
+            cursor: pointer;
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            letter-spacing: 0.05em;
+            flex: 1;
+        }
+        
+        button:hover {
+            background-color: var(--te-white);
+            color: var(--te-black);
+        }
+        
+        button.active, button.stop {
+            background-color: var(--te-yellow);
+            color: var(--te-black);
+            border-color: var(--te-yellow);
+        }
+        
+        .status {
+            text-align: center;
+            font-weight: bold;
+            margin: 15px 0;
+            height: 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--te-yellow);
+        }
+        
+        .presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 20px 0;
+        }
+        
+        .preset-btn {
+            background-color: var(--te-black);
+            min-width: 0;
+        }
+        
+        .preset-btn.active {
+            background-color: var(--te-yellow);
+            color: var(--te-black);
+            border-color: var(--te-yellow);
+        }
+        
+        .visualization {
+            width: 100%;
+            height: 120px;
+            margin: 30px 0;
+            border: 2px solid var(--te-white);
+            overflow: hidden;
+            background-color: var(--te-black);
+        }
+        
+        .timer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 30px 0;
+            gap: 15px;
+        }
+        
+        .timer-container label {
+            text-transform: uppercase;
+            font-size: 11px;
+            color: var(--te-yellow);
+            font-weight: bold;
+        }
+        
+        select {
+            background-color: var(--te-black);
+            color: var(--te-white);
+            border: 2px solid var(--te-white);
+            padding: 8px 12px;
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            min-width: 150px;
+            text-align: center;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--te-yellow);
+        }
+        
+        #timer {
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--te-yellow);
+            margin: 10px 0;
+            font-family: 'Space Mono', monospace;
+            letter-spacing: 0.1em;
+        }
+        
+        .device-name {
+            position: absolute;
+            top: -15px;
+            right: 0;
+            font-size: 10px;
+            color: var(--te-white);
+            background-color: var(--te-yellow);
+            padding: 2px 6px;
+            color: var(--te-black);
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        
+        .info {
+            margin-top: 30px;
+            background-color: var(--te-black);
+            padding: 20px;
+            border: 1px solid var(--te-gray);
+            border-left: 4px solid var(--te-yellow);
+            font-size: 11px;
+            line-height: 1.6;
+        }
+        
+        .info h3 {
+            text-transform: uppercase;
+            color: var(--te-yellow);
+            margin-bottom: 10px;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+        }
+        
+        .info ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .info li strong {
+            color: var(--te-yellow);
+        }
+        
+        .model-number {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 10px;
+            color: var(--te-white);
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+        }
+        
+        .developer-credit {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 10px;
+            color: var(--te-yellow);
+            letter-spacing: 0.1em;
+        }
+        
+        .toggle-container {
+            position: relative;
+            width: 60px;
+            height: 24px;
+        }
+        
+        .toggle-container input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--te-black);
+            border: 2px solid var(--te-white);
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .toggle-container input:checked + .toggle-label {
+            background-color: var(--te-yellow);
+            color: var(--te-black);
+            border-color: var(--te-yellow);
+        }
+        
+        .toggle-container input:checked + .toggle-label::after {
+            content: "ON";
+        }
+        
+        .toggle-container input:not(:checked) + .toggle-label::after {
+            content: "OFF";
+        }
+        
+        .dot-pattern {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+        }
+        
+        .dot {
+            width: 5px;
+            height: 5px;
+            background-color: var(--te-yellow);
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dot-pattern">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+        <div class="device-name">OP-BRAIN</div>
+        <h1>Binaural Generator</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="carrier">Carrier Frequency</label>
+                <div class="slider-container">
+                    <input type="range" id="carrier" min="200" max="500" value="250" step="1">
+                    <span class="slider-value" id="carrier-value">250 Hz</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="beat">Beat Frequency</label>
+                <div class="slider-container">
+                    <input type="range" id="beat" min="0.5" max="30" value="10" step="0.5">
+                    <span class="slider-value" id="beat-value">10 Hz</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="volume">Volume</label>
+                <div class="slider-container">
+                    <input type="range" id="volume" min="0" max="100" value="50" step="1">
+                    <span class="slider-value" id="volume-value">50%</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="beat-enabled">Beat Generator</label>
+                <div class="slider-container">
+                    <div class="toggle-container">
+                        <input type="checkbox" id="beat-enabled">
+                        <label for="beat-enabled" class="toggle-label">OFF</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="beat-tempo">Beat Tempo (BPM)</label>
+                <div class="slider-container">
+                    <input type="range" id="beat-tempo" min="40" max="180" value="70" step="1" disabled>
+                    <span class="slider-value" id="beat-tempo-value">70 BPM</span>
+                </div>
+            </div>
+            
+            <div class="control-group">
+                <label for="beat-volume">Beat Volume</label>
+                <div class="slider-container">
+                    <input type="range" id="beat-volume" min="0" max="100" value="50" step="1" disabled>
+                    <span class="slider-value" id="beat-volume-value">50%</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="button-row">
+            <button id="play-btn">Start</button>
+        </div>
+        
+        <div class="status" id="status">Ready</div>
+        
+        <div class="presets">
+            <button class="preset-btn" data-frequency="10">Alpha 10Hz</button>
+            <button class="preset-btn" data-frequency="6">Theta 6Hz</button>
+            <button class="preset-btn" data-frequency="2">Delta 2Hz</button>
+            <button class="preset-btn" data-frequency="16">Beta 16Hz</button>
+        </div>
+        
+        <div class="visualization">
+            <canvas id="visualizer"></canvas>
+        </div>
+        
+        <div class="timer-container">
+            <label for="session-time">Session Duration</label>
+            <select id="session-time">
+                <option value="0">∞ Continuous</option>
+                <option value="5">05:00</option>
+                <option value="10">10:00</option>
+                <option value="15">15:00</option>
+                <option value="20">20:00</option>
+                <option value="30">30:00</option>
+                <option value="45">45:00</option>
+                <option value="60">60:00</option>
+            </select>
+            <div id="timer"></div>
+        </div>
+        
+        <div class="info">
+            <h3>Frequency Reference</h3>
+            <ul>
+                <li><strong>Delta (0.5-4 Hz):</strong> Deep sleep, healing</li>
+                <li><strong>Theta (4-8 Hz):</strong> Meditation, creativity</li>
+                <li><strong>Alpha (8-13 Hz):</strong> Relaxed focus, concentration</li>
+                <li><strong>Beta (13-30 Hz):</strong> Active thinking, alertness</li>
+            </ul>
+            <h3>Usage</h3>
+            <p>For optimal results, use stereo headphones in a quiet environment. Default 10 Hz setting enhances concentration and learning ability.</p>
+        </div>
+        
+        <div class="model-number">OP-BRAIN • MOD B-010 • SERIAL №24550</div>
+        <div class="developer-credit">Developed by Eoin Lynch</div>
+    </div>
+    
+    <script>
+        let audioContext = null;
+        let oscillatorLeft = null;
+        let oscillatorRight = null;
+        let gainNode = null;
+        let analyser = null;
+        let isPlaying = false;
+        let timerInterval = null;
+        let remainingTime = 0;
+        let activePreset = null;
+        
+        // Beat generator variables
+        let beatEnabled = false;
+        let beatInterval = null;
+        let kickBuffer = null;
+        let beatGainNode = null;
+        
+        const carrierSlider = document.getElementById('carrier');
+        const beatSlider = document.getElementById('beat');
+        const volumeSlider = document.getElementById('volume');
+        const carrierValue = document.getElementById('carrier-value');
+        const beatValue = document.getElementById('beat-value');
+        const volumeValue = document.getElementById('volume-value');
+        const playBtn = document.getElementById('play-btn');
+        const status = document.getElementById('status');
+        const sessionTimeSelect = document.getElementById('session-time');
+        const timerDisplay = document.getElementById('timer');
+        const presetBtns = document.querySelectorAll('.preset-btn');
+        const canvas = document.getElementById('visualizer');
+        const canvasCtx = canvas.getContext('2d');
+        
+        // Beat generator elements
+        const beatEnabledCheckbox = document.getElementById('beat-enabled');
+        const beatTempoSlider = document.getElementById('beat-tempo');
+        const beatVolumeSlider = document.getElementById('beat-volume');
+        const beatTempoValue = document.getElementById('beat-tempo-value');
+        const beatVolumeValue = document.getElementById('beat-volume-value');
+        
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function updateTimer() {
+            if (remainingTime <= 0) {
+                stopSound();
+                clearInterval(timerInterval);
+                timerDisplay.textContent = '';
+                return;
+            }
+            
+            remainingTime--;
+            timerDisplay.textContent = formatTime(remainingTime);
+        }
+        
+        function setupTimer() {
+            clearInterval(timerInterval);
+            timerDisplay.textContent = '';
+            
+            const duration = parseInt(sessionTimeSelect.value);
+            if (duration > 0) {
+                remainingTime = duration * 60;
+                timerDisplay.textContent = formatTime(remainingTime);
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+        }
+        
+        function drawVisualization() {
+            if (!isPlaying || !analyser) return;
+            
+            requestAnimationFrame(drawVisualization);
+            
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyser.getByteTimeDomainData(dataArray);
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            canvasCtx.fillStyle = 'rgb(0, 0, 0)';
+            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            canvasCtx.lineWidth = 2;
+            canvasCtx.strokeStyle = '#fffa4d';
+            canvasCtx.beginPath();
+            
+            const sliceWidth = canvas.width / bufferLength;
+            let x = 0;
+            
+            for (let i = 0; i < bufferLength; i++) {
+                const v = dataArray[i] / 128.0;
+                const y = v * canvas.height / 2;
+                
+                if (i === 0) {
+                    canvasCtx.moveTo(x, y);
+                } else {
+                    canvasCtx.lineTo(x, y);
+                }
+                
+                x += sliceWidth;
+            }
+            
+            canvasCtx.lineTo(canvas.width, canvas.height / 2);
+            canvasCtx.stroke();
+        }
+        
+        function updatePresetButtons() {
+            presetBtns.forEach(btn => {
+                btn.classList.remove('active');
+                
+                const frequency = parseFloat(btn.dataset.frequency);
+                if (frequency === parseFloat(beatSlider.value)) {
+                    btn.classList.add('active');
+                    activePreset = btn;
+                }
+            });
+        }
+        
+        // Create and load kick drum sample
+        async function createKickDrum() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            if (kickBuffer) return; // Already loaded
+            
+            try {
+                // Create a synthetic kick drum sound
+                const kickDuration = 0.25;
+                const sampleRate = audioContext.sampleRate;
+                const bufferSize = kickDuration * sampleRate;
+                kickBuffer = audioContext.createBuffer(1, bufferSize, sampleRate);
+                const data = kickBuffer.getChannelData(0);
+                
+                // Create a simple kick drum using frequency modulation
+                const frequency = 150;
+                const decay = 5;
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    const t = i / sampleRate;
+                    const amplitude = Math.exp(-decay * t);
+                    const modFreq = frequency * Math.exp(-decay * 3 * t);
+                    data[i] = amplitude * Math.sin(2 * Math.PI * modFreq * t);
+                }
+                
+                return kickBuffer;
+            } catch (error) {
+                console.error('Error creating kick drum:', error);
+                status.textContent = 'Error: Failed to create kick sound';
+            }
+        }
+        
+        // Play one kick drum hit
+        function playKick() {
+            if (!audioContext || !kickBuffer || !beatGainNode) return;
+            
+            const kickSource = audioContext.createBufferSource();
+            kickSource.buffer = kickBuffer;
+            kickSource.connect(beatGainNode);
+            kickSource.start();
+        }
+        
+        // Start/stop beat generator
+        function toggleBeatGenerator() {
+            if (!audioContext) return;
+            
+            beatEnabled = beatEnabledCheckbox.checked;
+            beatTempoSlider.disabled = !beatEnabled;
+            beatVolumeSlider.disabled = !beatEnabled;
+            
+            if (beatEnabled && isPlaying) {
+                startBeatGenerator();
+            } else {
+                stopBeatGenerator();
+            }
+        }
+        
+        // Start the beat generator
+        function startBeatGenerator() {
+            if (!beatEnabled || !isPlaying || beatInterval) return;
+            
+            const tempo = parseInt(beatTempoSlider.value);
+            const interval = (60 / tempo) * 1000; // Convert BPM to milliseconds
+            
+            beatInterval = setInterval(playKick, interval);
+        }
+        
+        // Stop the beat generator
+        function stopBeatGenerator() {
+            if (beatInterval) {
+                clearInterval(beatInterval);
+                beatInterval = null;
+            }
+        }
+        
+        // Update beat parameters
+        function updateBeatParameters() {
+            if (!isPlaying || !beatEnabled) return;
+            
+            // Update beat volume
+            if (beatGainNode) {
+                const beatVolume = parseInt(beatVolumeSlider.value) / 100;
+                beatGainNode.gain.value = beatVolume;
+            }
+            
+            // Update beat tempo (restart the interval)
+            stopBeatGenerator();
+            startBeatGenerator();
+        }
+        
+        function playSound() {
+            if (isPlaying) return;
+            
+            try {
+                // Create audio context
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create the oscillators
+                oscillatorLeft = audioContext.createOscillator();
+                oscillatorRight = audioContext.createOscillator();
+                
+                // Create gain node for volume control
+                gainNode = audioContext.createGain();
+                
+                // Create beat gain node
+                beatGainNode = audioContext.createGain();
+                const beatVolume = parseInt(beatVolumeSlider.value) / 100;
+                beatGainNode.gain.value = beatVolume;
+                beatGainNode.connect(audioContext.destination);
+                
+                // Load kick drum sound
+                createKickDrum();
+                
+                // Create analyser node for visualization
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
+                
+                // Create channel merger for stereo output
+                const merger = audioContext.createChannelMerger(2);
+                
+                // Set frequencies
+                const carrierFreq = parseInt(carrierSlider.value);
+                const beatFreq = parseFloat(beatSlider.value);
+                
+                oscillatorLeft.frequency.value = carrierFreq;
+                oscillatorRight.frequency.value = carrierFreq + beatFreq;
+                
+                // Set volume
+                const volume = parseInt(volumeSlider.value) / 100;
+                gainNode.gain.value = volume;
+                
+                // Connect nodes
+                oscillatorLeft.connect(merger, 0, 0);
+                oscillatorRight.connect(merger, 0, 1);
+                merger.connect(gainNode);
+                gainNode.connect(analyser);
+                analyser.connect(audioContext.destination);
+                
+                // Start oscillators
+                oscillatorLeft.start();
+                oscillatorRight.start();
+                
+                isPlaying = true;
+                playBtn.textContent = 'Stop';
+                playBtn.classList.add('stop');
+                status.textContent = `Beat Active: ${beatFreq} Hz`;
+                
+                // Start beat generator if enabled
+                if (beatEnabled) {
+                    startBeatGenerator();
+                }
+                
+                // Update preset buttons
+                updatePresetButtons();
+                
+                // Start visualization
+                drawVisualization();
+                
+                // Start timer if needed
+                setupTimer();
+                
+            } catch (error) {
+                console.error('Error starting audio:', error);
+                status.textContent = 'Error: Audio init failed';
+            }
+        }
+        
+        function stopSound() {
+            if (!isPlaying) return;
+            
+            oscillatorLeft.stop();
+            oscillatorRight.stop();
+            
+            oscillatorLeft.disconnect();
+            oscillatorRight.disconnect();
+            gainNode.disconnect();
+            
+            // Stop beat generator
+            stopBeatGenerator();
+            
+            if (beatGainNode) {
+                beatGainNode.disconnect();
+            }
+            
+            audioContext.close();
+            audioContext = null;
+            
+            isPlaying = false;
+            playBtn.textContent = 'Start';
+            playBtn.classList.remove('stop');
+            status.textContent = 'Ready';
+            
+            clearInterval(timerInterval);
+        }
+        
+        function updateParameters() {
+            if (!isPlaying) return;
+            
+            const carrierFreq = parseInt(carrierSlider.value);
+            const beatFreq = parseFloat(beatSlider.value);
+            const volume = parseInt(volumeSlider.value) / 100;
+            
+            oscillatorLeft.frequency.value = carrierFreq;
+            oscillatorRight.frequency.value = carrierFreq + beatFreq;
+            gainNode.gain.value = volume;
+            
+            status.textContent = `Beat Active: ${beatFreq} Hz`;
+            
+            // Update preset buttons
+            updatePresetButtons();
+        }
+        
+        // Event listeners
+        playBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                stopSound();
+            } else {
+                playSound();
+            }
+        });
+        
+        carrierSlider.addEventListener('input', () => {
+            carrierValue.textContent = `${carrierSlider.value} Hz`;
+            updateParameters();
+        });
+        
+        beatSlider.addEventListener('input', () => {
+            beatValue.textContent = `${beatSlider.value} Hz`;
+            updateParameters();
+        });
+        
+        volumeSlider.addEventListener('input', () => {
+            volumeValue.textContent = `${volumeSlider.value}%`;
+            updateParameters();
+        });
+        
+        // Beat generator event listeners
+        beatEnabledCheckbox.addEventListener('change', toggleBeatGenerator);
+        
+        beatTempoSlider.addEventListener('input', () => {
+            beatTempoValue.textContent = `${beatTempoSlider.value} BPM`;
+            updateBeatParameters();
+        });
+        
+        beatVolumeSlider.addEventListener('input', () => {
+            beatVolumeValue.textContent = `${beatVolumeSlider.value}%`;
+            updateBeatParameters();
+        });
+        
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const frequency = parseFloat(btn.dataset.frequency);
+                beatSlider.value = frequency;
+                beatValue.textContent = `${frequency} Hz`;
+                
+                // Update active preset
+                updatePresetButtons();
+                
+                if (isPlaying) {
+                    updateParameters();
+                } else {
+                    playSound();
+                }
+            });
+        });
+        
+        // Set initial values
+        carrierValue.textContent = `${carrierSlider.value} Hz`;
+        beatValue.textContent = `${beatSlider.value} Hz`;
+        volumeValue.textContent = `${volumeSlider.value}%`;
+        beatTempoValue.textContent = `${beatTempoSlider.value} BPM`;
+        beatVolumeValue.textContent = `${beatVolumeSlider.value}%`;
+        
+        // Auto-select the concentration preset
+        window.onload = function() {
+            // Set to concentration (Alpha) by default
+            beatSlider.value = 10;
+            beatValue.textContent = `10 Hz`;
+            updatePresetButtons();
+        };
+    </script>
+</body>
+</html>
